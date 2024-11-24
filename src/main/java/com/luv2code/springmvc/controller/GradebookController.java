@@ -20,12 +20,15 @@ public class GradebookController {
     @Autowired
     private Gradebook gradebook;
 
-
     @RequestMapping(value = "/", method = RequestMethod.GET)
-    public List<GradebookCollegeStudent> getStudents() {
+    public ResponseEntity<List<GradebookCollegeStudent>> getStudents() {
         gradebook = studentService.getGradebook();
-        return gradebook.getStudents();
+        List<GradebookCollegeStudent> students = gradebook.getStudents();
+
+        // Return the list wrapped in a ResponseEntity with a 200 OK status
+        return ResponseEntity.ok(students);
     }
+
 
 
     @GetMapping("/studentInformation/{id}")
