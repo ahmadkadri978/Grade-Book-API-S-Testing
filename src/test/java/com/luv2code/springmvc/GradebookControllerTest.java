@@ -171,8 +171,70 @@ public class GradebookControllerTest {
                 .andExpect(jsonPath("$.message" , is("Student or Grade was not found")));
 
     }
+    @Test
+    public void createValidGradeHttpRequest() throws Exception{
+        mockMvc.perform(MockMvcRequestBuilders.post("/grades")
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("grade" , "85.00")
+                .param("gradeType" , "math")
+                .param("studentId" , "1"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF))
+                .andExpect(jsonPath("$.id" , is(1)))
+                .andExpect(jsonPath("$.firstname" , is("Eric")))
+                .andExpect(jsonPath("$.lastname" , is("Roby")))
+                .andExpect(jsonPath("$.emailAddress" , is("eric.roby@luv2code_school.com")));
+    }
+    @Test
+    public void createValidGradeHttpRequestStudentNotExist() throws Exception{
+        mockMvc.perform(MockMvcRequestBuilders.post("/grades")
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("grade" , "85.00")
+                .param("gradeType" , "math")
+                .param("studentId" , "0"))
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.status" , is(404)))
+                .andExpect(jsonPath("$.message" , is("Student or Grade was not found")));
 
+    }
+    @Test
+    public void createNonValidGradeHttpRequest() throws Exception{
+        mockMvc.perform(MockMvcRequestBuilders.post("/grades")
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("grade" , "85.00")
+                .param("gradeType" , "literature")
+                .param("studentId" , "1"))
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.status" , is(404)))
+                .andExpect(jsonPath("$.message" , is("Student or Grade was not found")));
+    }
+    @Test
+    public void deleteValidHttpRequest() throws Exception{
+        assertTrue(mathGradeDao.findById(1).isPresent());
+        mockMvc.perform(MockMvcRequestBuilders.delete("/grades/{id}/{gradeType}" , 1 , "math"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON_UTF))
+                .andExpect(jsonPath("$.id" , is(1)))
+                .andExpect(jsonPath("$.firstname" , is("Eric")))
+                .andExpect(jsonPath("$.lastname" , is("Roby")))
+                .andExpect(jsonPath("$.emailAddress" , is("eric.roby@luv2code_school.com")))
+                .andExpect(jsonPath("$.studentGrades.mathGradeResults" , hasSize(0)));
 
+    }
+    @Test
+    public void deleteValidGradeHttpRequestStudentIdNotExist() throws Exception{
+        mockMvc.perform(MockMvcRequestBuilders.delete("/grades/{id}/{gradeType}" , 0 , "math"))
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.status" , is(404)))
+                .andExpect(jsonPath("$.message" , is("Student or Grade was not found")));
+    }
+    @Test
+    public void deleteNonValidGradeHttpRequest() throws Exception{
+        mockMvc.perform(MockMvcRequestBuilders.delete("/grades/{id}/{gradeType}" , 1 , "literature"))
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.status" , is(404)))
+                .andExpect(jsonPath("$.message" , is("Student or Grade was not found")));
+    }
 
 
     @AfterEach
